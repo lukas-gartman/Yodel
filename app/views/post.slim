@@ -1,0 +1,46 @@
+div.background style="background-color: #{@post.color}"
+    header
+        span.back-arrow onclick="go_back()"
+        -if Post.check_pin(@post.id, @user.id)
+            span#pin-post.pinned onclick="unpin(#{@post.id})"
+        -else
+            span#pin-post.pin onclick="pin(#{@post.id})"
+
+    div.posts
+        div.post style="background-color: #{@post.color}"
+            div.content
+                div.info
+                    b
+                        | OJ. 
+                    | #{Utilities.time_ago_in_words(@post.date)}
+                div.text
+                    pre =@post.text
+                div.options-button onclick="create_menu(#{@post.id}, #{@post.owner == @user.id})"
+                        span &bull;&bull;&bull;
+            div.rating
+                -is_disabled = Post.check_vote(@post.id, 0, @user.id) || @post.owner == @user.id ? "disabled" : nil
+                button.arrow-up onclick="upvote(#{@post.id}, 0)" disabled=is_disabled
+                span id="post-#{@post.id}" =@post.votes
+                button.arrow-down onclick="downvote(#{@post.id}, 0)" disabled=is_disabled
+                
+        div.post-separator
+        -for comment in @comments
+            div.comment style="background-color: #{@post.color}"
+                div.content
+                    div.info
+                        b
+                            | #{comment.identifier == 0 ? "OJ" : comment.identifier}. 
+                        | #{Utilities.time_ago_in_words(comment.date)}
+                    div.text
+                        pre =comment.text
+                    div.options-button onclick="create_menu(#{comment.id}, #{comment.owner == @user.id}, true)"
+                        span &bull;&bull;&bull;
+                div.rating
+                    -is_disabled = Post.check_vote(@post.id, comment.id, @user.id) || comment.owner == @user.id ? "disabled" : nil
+                    button.arrow-up onclick="upvote(#{@post.id}, #{comment.id})" disabled=is_disabled
+                    span id="comment-#{comment.id}" =comment.votes
+                    button.arrow-down onclick="downvote(#{@post.id}, #{comment.id})" disabled=is_disabled
+
+        form.reply action="/post/#{@post.id}/comment" method="post"
+            input type="text" name="comment" placeholder="Yodel back here..." autocomplete="off"
+            input.post-send type="submit" value="Send"

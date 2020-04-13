@@ -1,0 +1,7 @@
+form action="/post/new" method="POST"
+    header
+        a.back-arrow title="Go back" onclick="go_back()"
+        input.post-send type="submit" value="Send"
+    input type="hidden" name="chan" value="#{params['channel']}"
+    input type="hidden" name="color" value="#{@color}"
+    textarea class="yodel-text" style="background-color: #{@color}" type="text" name="text" placeholder="Share your thoughts and experiences with the people around you."

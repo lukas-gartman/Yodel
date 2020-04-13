@@ -1,0 +1,38 @@
+nav
+    div.nav-column
+        span.menu-link.active Channels
+    div.nav-column-main
+        a.location-pin href="/"
+        a.menu-link href="/" id="city" = @location
+        a.menu-arrow-down href="/"
+    div.nav-column
+        a.menu-link href="/my" title="My karma" #{@user.karma} karma
+
+div.channels-title
+    span CHANNELS
+    form action="/channel/new" method="post"
+        input type="text" name="name" placeholder="Channel name" autocomplete="off"
+        input.channel-create type="submit" value="Create"
+
+-unless @member_channels.empty?
+    div.heading MY CHANNELS
+    div.channels
+        -for channel in @member_channels
+            div.channel
+                div
+                    a href="/channel/#{channel.id}" @ #{channel.name}
+                div.channel-members
+                    span #{channel.member_count}
+                    img.user src="/img/user.svg"
+                    a.channel-joined href="/channel/#{channel.id}/leave" title="Leave channel"
+-unless @other_channels.empty?
+    div.heading ALL CHANNELS
+    div.channels
+        -for channel in @other_channels
+            div.channel
+                div
+                    a href="/channel/#{channel.id}" @ #{channel.name}
+                div.channel-members
+                    span #{channel.member_count}
+                    img.user src="/img/user.svg"
+                    a.channel-join href="/channel/#{channel.id}/join" title="Join channel"

@@ -1,0 +1,35 @@
+header
+    span.back-arrow onclick="go_back()"
+div.posts-feed
+    -@posts.each_with_index do |post, i|
+        -distance = Utilities.get_distance_between_coords(@user.coords, post.coords)
+        / Don't show local posts if international feed is on
+        -next if  session[:international_feed] && post.coords != "0.0,0.0"
+        / Don't show international posts if local feed is on
+        -next if !session[:international_feed] && post.coords == "0.0,0.0"
+        / Don't show posts further than 10km away if local feed is on
+        -next if !session[:international_feed] && distance > POST_RADIUS
+        div.post style="background-color: #{post.color}"
+            div.content
+                div.info onclick="window.location='/post/#{post.id}';"
+                    span
+                        =distance.round(1).to_s + "km - " + Utilities.time_ago_in_words(post.date)
+                        -unless post.channel == 0
+                            -channel = Channel.get(post.channel)
+                            b
+                                a href="/channel/#{channel.id}"  &#8226; @#{channel.name}
+                div.text onclick="window.location='/post/#{post.id}';"
+                    pre =post.text
+                div.options
+                    span #{post.comments_count} comments
+                    span.options-button onclick="create_menu(#{post.id}, #{post.owner == @user.id})" &bull;&bull;&bull;
+                    / Empty span acting as filler to center options button
+                    span
+            div.rating
+                -is_disabled = Post.check_vote(post.id, 0, @user.id) || post.owner == @user.id ? "disabled" : nil
+                button.arrow-up onclick="upvote(#{post.id}, 0)" disabled=is_disabled
+                span id="post-#{post.id}" =post.votes
+                button.arrow-down onclick="downvote(#{post.id}, 0)" disabled=is_disabled
+-unless @posts.empty?
+    div.end
+        p You have reached the end

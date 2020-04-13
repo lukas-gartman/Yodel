@@ -1,0 +1,8 @@
+-flash.each do |name, message|
+	div class=("flash flash-#{name}") 
+		-if message.is_a? Array
+			ul
+				-for m in message
+					li = m
+		-else
+			= message

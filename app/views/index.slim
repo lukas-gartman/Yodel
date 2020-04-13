@@ -1,0 +1,73 @@
+nav
+    div.nav-column
+        a.menu-link href="/channels" Channels
+    div.nav-column-main id="dropdown-button"
+        span.location-pin-active
+        span.menu-link.active id="city" = @location
+        span.menu-arrow-down id="dropdown-arrow"
+    div.nav-column
+        a.menu-link href="/my" title="My karma" #{@user.karma} karma
+
+div.dropdown.hidden id="dropdown-menu"
+    div.dropdown-header
+        span Location
+        hr.dropdown-separator
+    / International feed is shown
+    -if session[:international_feed]
+        div.dropdown-items
+            span.location-pin
+            / User has location
+            -if session[:location]
+                a href="/switch_feed" = session[:location]
+            / User does not have location - click button to get location
+            -else
+                a href="/get_location" Get location
+        hr.dropdown-separator
+        div.dropdown-items
+            span.globe-active
+            span.active International Feed
+    / Local feed is shown
+    -else
+        div.dropdown-items
+            span.location-pin-active
+            span.active = session[:location]
+        hr.dropdown-separator
+        div.dropdown-items
+            span.globe
+            a href="/switch_feed" International Feed
+
+div.posts-feed
+    -@posts.each_with_index do |post, i|
+        -distance = Utilities.get_distance_between_coords(@user.coords, post.coords)
+        / Don't show local posts if international feed is on
+        -next if  session[:international_feed] && post.coords != "0.0,0.0"
+        / Don't show international posts if local feed is on
+        -next if !session[:international_feed] && post.coords == "0.0,0.0"
+        / Don't show posts further than 10km away if local feed is on
+        -next if !session[:international_feed] && distance > POST_RADIUS
+        div.post style="background-color: #{post.color}"
+            div.content
+                div.info onclick="window.location='/post/#{post.id}';"
+                    span
+                        =distance.round(1).to_s + "km - " + Utilities.time_ago_in_words(post.date)
+                        -unless post.channel == 0
+                            -channel = Channel.get(post.channel)
+                            b
+                                a href="/channel/#{channel.id}"  &#8226; @#{channel.name}
+                div.text onclick="window.location='/post/#{post.id}';"
+                    pre =post.text
+                div.options
+                    span #{post.comments_count} comments
+                    span.options-button onclick="create_menu(#{post.id}, #{post.owner == @user.id})" &bull;&bull;&bull;
+                    / Empty span acting as filler to center options button
+                    span
+            div.rating
+                -is_disabled = Post.check_vote(post.id, 0, @user.id) || post.owner == @user.id ? "disabled" : nil
+                button.arrow-up onclick="upvote(#{post.id}, 0)" disabled=is_disabled
+                span id="post-#{post.id}" =post.votes
+                button.arrow-down onclick="downvote(#{post.id}, 0)" disabled=is_disabled
+-unless @posts.empty?
+    div.end
+        p You have reached the end
+
+a.new-post href="/post/new" title="New post"
