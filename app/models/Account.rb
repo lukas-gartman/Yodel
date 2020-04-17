@@ -8,10 +8,11 @@ class Account < Database
         @username = user[1]
         @karma = user[4]
         @coords = "0.0,0.0"
-        if user[5] == 1
-            @rank = :mod
-        elsif user[5] == 2
+        case user[5]
+        when 2
             @rank = :admin
+        when 1
+            @rank = :mod
         else
             @rank = :user
         end
